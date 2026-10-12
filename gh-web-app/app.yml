@@ -1,0 +1,30 @@
+# GitHub App Manifest —— 在 https://github.com/settings/apps/new?url=<本文件公网地址> 一次性创建应用
+# 或用 gh cli: gh api --method POST -H "Accept: application/vnd.github+json" /app-manifests -f "manifest=$(cat app.yml)"
+name: gh-web-app
+description: GitHub web operations client with OAuth login and bot automation
+url: http://localhost:3000
+hook_attributes:
+  url: http://localhost:3000/webhook
+redirect_url: http://localhost:3000/auth/callback
+public: true
+default_permissions:
+  contents: write
+  issues: write
+  pull_requests: write
+  metadata: read
+  actions: read
+  checks: read
+  workflows: write
+  administration: read
+default_events:
+  - issues
+  - pull_request
+  - push
+  - release
+  - repository
+request_oauth_scopes:
+  - repo
+  - workflow
+  - notifications
+  - read:org
+  - gist

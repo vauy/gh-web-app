@@ -1,0 +1,172 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel2: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #4493f8;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --radius: 8px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  font-size: 14px; line-height: 1.5;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button {
+  background: #21262d; color: var(--text); border: 1px solid rgba(240,246,252,.15);
+  border-radius: var(--radius); padding: 5px 14px; cursor: pointer; font-size: 13px;
+}
+button:hover { background: #30363d; }
+button.primary { background: #238636; border-color: rgba(240,246,252,.1); color: #fff; font-weight: 600; }
+button.primary:hover { background: #2ea043; }
+button.danger { background: #da3633; color: #fff; }
+button.danger:hover { background: #f85149; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+input, select, textarea {
+  background: #0d1117; color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 6px 10px; font-size: 13px; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(68,147,248,.2); }
+textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* 顶栏 */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px;
+  background: #010409; border-bottom: 1px solid var(--border); padding: 10px 20px;
+}
+.brand { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; }
+.top-search { flex: 1; max-width: 460px; }
+.top-search input { background: var(--panel); }
+.user-area { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-area img { border-radius: 50%; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; }
+
+/* 布局 */
+.layout { display: flex; min-height: calc(100vh - 48px); }
+.sidebar {
+  width: 230px; flex-shrink: 0; padding: 16px 10px;
+  border-right: 1px solid var(--border); background: var(--panel);
+}
+.sidebar .nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px;
+  color: var(--text); cursor: pointer; margin-bottom: 2px;
+}
+.sidebar .nav-item:hover { background: var(--panel2); text-decoration: none; }
+.sidebar .nav-item.active { background: var(--panel2); color: var(--accent); font-weight: 600; }
+.sidebar .nav-group { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 12px 10px 4px; }
+.main { flex: 1; padding: 24px; min-width: 0; overflow-x: auto; }
+
+/* 卡片 / 区块 */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.card h3 { margin: 0 0 10px; font-size: 15px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.muted { color: var(--muted); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* 列表 */
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.list li:last-child { border-bottom: none; }
+.list .title { font-weight: 600; }
+.list .desc { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+/* 标签 */
+.badge { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 12px; background: var(--panel2); border: 1px solid var(--border); margin: 2px; }
+.badge.green { color: var(--green); border-color: rgba(63,185,80,.4); }
+.badge.red { color: var(--red); border-color: rgba(248,81,73,.4); }
+.badge.accent { color: var(--accent); border-color: rgba(68,147,248,.4); }
+
+/* 标签页 */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.tabs .tab { padding: 8px 16px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); }
+.tabs .tab:hover { color: var(--text); }
+.tabs .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* 面包屑 */
+.breadcrumb { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; color: var(--accent); font-size: 13.5px; }
+.breadcrumb .sep { color: var(--muted); }
+
+/* 文件树行 */
+.file-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.file-row:hover { background: var(--panel2); }
+.file-row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-row .actions { opacity: 0; transition: opacity .15s; }
+.file-row:hover .actions { opacity: 1; }
+
+/* 表单 */
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12.5px; }
+.form-inline { display: flex; gap: 8px; align-items: center; }
+
+/* 提交 / 差异 */
+.commit-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+.commit-box .commit-head { padding: 10px 12px; font-family: ui-monospace, monospace; font-size: 12.5px; }
+.commit-box pre { margin: 0; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; }
+.diff-line.add { color: var(--green); background: rgba(63,185,80,.08); }
+.diff-line.del { color: var(--red); background: rgba(248,81,73,.08); }
+
+/* 内容渲染（README 等） */
+.rendered { padding: 8px 4px; }
+.rendered h1, .rendered h2, .rendered h3 { border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.rendered code { background: var(--panel2); padding: 2px 5px; border-radius: 4px; }
+.rendered pre { background: var(--panel2); padding: 12px; border-radius: 6px; overflow-x: auto; }
+.rendered table { border-collapse: collapse; }
+.rendered td, .rendered th { border: 1px solid var(--border); padding: 6px 10px; }
+.rendered img { max-width: 100%; }
+
+/* 表格 */
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.tbl th { color: var(--muted); font-weight: 600; }
+
+/* 提示 */
+#toast { position: fixed; top: 60px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 16px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  animation: slideIn .2s ease;
+}
+.toast.err { border-color: var(--red); }
+.toast.ok { border-color: var(--green); }
+@keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* 弹窗 */
+#modalRoot .overlay {
+  position: fixed; inset: 0; background: rgba(1,4,9,.6); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+#modalRoot .modal {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  width: 100%; max-width: 620px; max-height: 85vh; overflow: auto; padding: 20px;
+}
+#modalRoot .modal h3 { margin: 0 0 14px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* 登录页 */
+.login-wrap { max-width: 480px; margin: 60px auto; }
+.login-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 32px; text-align: center; }
+.login-box h2 { margin: 0 0 6px; }
+.login-btn {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 16px;
+  background: #238636; color: #fff; font-weight: 700; padding: 10px 28px;
+  border-radius: 8px; border: 1px solid rgba(240,246,252,.1); font-size: 15px;
+}
+.login-btn:hover { background: #2ea043; text-decoration: none; }
+
+/* 分页/加载 */
+.center { text-align: center; padding: 30px; color: var(--muted); }
+.spinner { display: inline-block; width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.actions-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.repo-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.repo-header .meta { color: var(--muted); font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }

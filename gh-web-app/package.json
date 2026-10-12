@@ -1,0 +1,17 @@
+{
+  "name": "gh-web-app",
+  "version": "1.0.0",
+  "description": "GitHub App (bot/integration) with web-version operations and OAuth account login",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
