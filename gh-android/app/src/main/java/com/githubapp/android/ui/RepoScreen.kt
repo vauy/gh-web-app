@@ -23,7 +23,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.githubapp.android.api.ApiClient
@@ -49,6 +51,7 @@ private val TABS = listOf(
 fun RepoScreen(owner: String, name: String) {
     val scope = rememberCoroutineScope()
     val ctx = LocalContext.current
+    val clipboard = LocalClipboardManager.current
     var repo by remember { mutableStateOf<JsonObject?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
     var tab by remember { mutableStateOf("code") }
@@ -130,6 +133,12 @@ fun RepoScreen(owner: String, name: String) {
                             } catch (e: ApiClient.ApiException) { toast(ctx, e.message ?: "Fork 失败") }
                         }
                     }) { Text("🍴 Fork") }
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedButton(onClick = {
+                        val url = "https://github.com/${r.s("full_name")}"
+                        clipboard.setText(AnnotatedString(url))
+                        toast(ctx, "已复制仓库地址：$url")
+                    }) { Text("🔗 复制地址") }
                 }
             }
             TabRow(selectedTabIndex = TABS.indexOfFirst { it.second == tab }.coerceAtLeast(0)) {
