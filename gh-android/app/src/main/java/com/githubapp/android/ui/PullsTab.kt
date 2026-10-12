@@ -224,7 +224,7 @@ fun PrScreen(owner: String, name: String, number: Int) {
             Column(Modifier.fillMaxSize().weight(1f)) {
                 Column(Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("#$number ${p.s("title")}", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        CopyText("#$number ${p.s("title")}", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         Text(
                             if (p.s("state") == "open") "🟢 进行中" else "🔴 已关闭",
                             color = if (p.s("state") == "open") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
@@ -237,7 +237,7 @@ fun PrScreen(owner: String, name: String, number: Int) {
                     )
                     if (p.b("merged")) Text("✓ 已合并", color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(8.dp))
-                    Text(p.s("body").ifEmpty { "（无内容）" })
+                    CopyText(p.s("body").ifEmpty { "（无内容）" })
                     Spacer(Modifier.height(10.dp))
                     if (p.s("state") == "open") {
                         Row {

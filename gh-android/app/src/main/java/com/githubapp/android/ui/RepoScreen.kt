@@ -69,7 +69,7 @@ fun RepoScreen(owner: String, name: String) {
         else -> Column(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    CopyText(
                         "${r.o("owner").s("login")}/${r.s("name")}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -121,6 +121,15 @@ fun RepoScreen(owner: String, name: String) {
                             } catch (e: ApiClient.ApiException) { toast(ctx, e.message ?: "操作失败") }
                         }
                     }) { Text("👀 关注") }
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedButton(onClick = {
+                        scope.launch {
+                            try {
+                                ApiClient.post("repos/${r.s("full_name")}/forks", JsonObject())
+                                toast(ctx, "已 Fork 到你的账号 🍴")
+                            } catch (e: ApiClient.ApiException) { toast(ctx, e.message ?: "Fork 失败") }
+                        }
+                    }) { Text("🍴 Fork") }
                 }
             }
             TabRow(selectedTabIndex = TABS.indexOfFirst { it.second == tab }.coerceAtLeast(0)) {

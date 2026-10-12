@@ -17,10 +17,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -72,6 +82,37 @@ fun AppDialog(
 /** 轻量提示 */
 fun toast(ctx: Context, msg: String) {
     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+}
+
+/** 支持长按复制的文本 */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CopyText(
+    text: String,
+    style: TextStyle = LocalTextStyle.current,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontWeight: FontWeight? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
+) {
+    val ctx = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    Text(
+        text = text,
+        style = style,
+        color = color,
+        fontWeight = fontWeight,
+        maxLines = maxLines,
+        overflow = overflow,
+        modifier = modifier.combinedClickable(
+            onClick = {},
+            onLongClick = {
+                clipboard.setText(AnnotatedString(text))
+                toast(ctx, "已复制「${text.take(24)}…」")
+            },
+        ),
+    )
 }
 
 private val avatarColors = listOf(

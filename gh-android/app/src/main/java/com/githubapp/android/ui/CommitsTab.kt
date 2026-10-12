@@ -106,8 +106,8 @@ fun CommitScreen(owner: String, name: String, sha: String) {
         err != null -> ErrorBox(err!!) { scope.launch { err = null; load() } }
         c == null -> LoadingBox()
         else -> Column(Modifier.fillMaxSize().padding(12.dp)) {
-            Text(c.o("commit").s("message"), fontWeight = FontWeight.Bold)
-            Text(
+            CopyText(c.o("commit").s("message"), fontWeight = FontWeight.Bold)
+            CopyText(
                 "${c.o("commit").o("author").s("name")} · ${fmtTime(c.o("commit").o("author").s("date"))} · ${sha.take(7)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

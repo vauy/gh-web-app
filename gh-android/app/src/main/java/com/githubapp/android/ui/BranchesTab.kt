@@ -88,7 +88,7 @@ fun BranchesTab(owner: String, name: String) {
                         Text("🌿")
                         Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(b.s("name"), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                            CopyText(b.s("name"), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
                             Text(
                                 b.o("commit").s("sha").take(7),
                                 style = MaterialTheme.typography.bodySmall,
