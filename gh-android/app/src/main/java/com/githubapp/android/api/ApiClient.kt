@@ -139,6 +139,8 @@ fun JsonObject.s(key: String): String =
     get(key)?.takeIf { !it.isJsonNull && it.isJsonPrimitive }?.asString ?: ""
 fun JsonObject.i(key: String): Int =
     get(key)?.takeIf { !it.isJsonNull && it.isJsonPrimitive }?.asInt ?: 0
+fun JsonObject.l(key: String): Long =
+    get(key)?.takeIf { !it.isJsonNull && it.isJsonPrimitive }?.asLong ?: 0L
 fun JsonObject.b(key: String): Boolean =
     get(key)?.takeIf { !it.isJsonNull && it.isJsonPrimitive }?.asBoolean ?: false
 fun JsonObject.a(key: String): JsonArray =

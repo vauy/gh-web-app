@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.githubapp.android.api.ApiClient
 import com.githubapp.android.api.i
+import com.githubapp.android.api.l
 import com.githubapp.android.api.o
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
@@ -75,7 +76,7 @@ fun NotificationsScreen() {
             !loaded -> LoadingBox()
             notifs.isEmpty() -> EmptyBox("🎉 没有未读通知")
             else -> LazyColumn {
-                items(notifs, key = { it.i("id") }) { n ->
+                items(notifs, key = { it.l("id") }) { n ->
                     val repo = n.o("repository").s("full_name")
                     val type = n.o("subject").s("type")
                     Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
@@ -98,7 +99,7 @@ fun NotificationsScreen() {
                             OutlinedButton(onClick = {
                                 scope.launch {
                                     try {
-                                        ApiClient.patch("notifications/threads/${n.i("id")}", JsonObject())
+                                        ApiClient.patch("notifications/threads/${n.l("id")}", JsonObject())
                                         toast(ctx, "已标记已读")
                                         load()
                                     } catch (e: ApiClient.ApiException) { toast(ctx, e.message ?: "操作失败") }

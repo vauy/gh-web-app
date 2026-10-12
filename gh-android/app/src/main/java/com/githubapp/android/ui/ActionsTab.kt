@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.githubapp.android.api.ApiClient
 import com.githubapp.android.api.a
 import com.githubapp.android.api.i
+import com.githubapp.android.api.l
 import com.githubapp.android.api.o
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
@@ -82,9 +83,9 @@ fun ActionsTab(owner: String, name: String) {
             Text("最近运行（${runs.size}）", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             LazyColumn {
-                items(runs, key = { it.i("id") }) { run ->
+                items(runs, key = { it.l("id") }) { run ->
                     Card(
-                        onClick = { Nav.show(Screen.Run(owner, name, run.i("id").toLong())) },
+                        onClick = { Nav.show(Screen.Run(owner, name, run.l("id"))) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(Modifier.padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

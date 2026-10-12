@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.githubapp.android.api.ApiClient
 import com.githubapp.android.api.a
 import com.githubapp.android.api.i
+import com.githubapp.android.api.l
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
 import com.githubapp.android.nav.Nav
@@ -66,7 +67,7 @@ private fun GlobalIssueListScreen(pr: Boolean) {
         !loaded -> LoadingBox()
         items.isEmpty() -> EmptyBox(if (pr) "暂无 Pull Requests" else "暂无 Issues")
         else -> LazyColumn {
-            items(items, key = { it.i("id") }) { it2 ->
+            items(items, key = { it.l("id") }) { it2 ->
                 val repoPath = it2.s("repository_url").substringAfter("/repos/")
                 Card(
                     onClick = {

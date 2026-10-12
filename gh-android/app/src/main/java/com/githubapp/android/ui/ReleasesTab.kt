@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.githubapp.android.api.ApiClient
 import com.githubapp.android.api.b
 import com.githubapp.android.api.i
+import com.githubapp.android.api.l
 import com.githubapp.android.api.o
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
@@ -69,7 +70,7 @@ fun ReleasesTab(owner: String, name: String) {
             !loaded -> LoadingBox()
             releases.isEmpty() -> EmptyBox("暂无 Release")
             else -> LazyColumn {
-                items(releases, key = { it.i("id") }) { r ->
+                items(releases, key = { it.l("id") }) { r ->
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp)) {
                             Text("🏷️ ${r.s("tag_name")}  ${r.s("name")}", fontWeight = FontWeight.SemiBold)
