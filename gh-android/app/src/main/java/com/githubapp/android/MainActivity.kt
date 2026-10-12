@@ -21,10 +21,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import com.githubapp.android.App
 import com.githubapp.android.nav.AppState
 import com.githubapp.android.nav.Nav
 import com.githubapp.android.nav.Screen
@@ -70,6 +72,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainRoot() {
     val context = LocalContext.current
+
+    // 启动时恢复登录态：本机已有令牌则直接进入主界面（令牌失效时首次请求会 401 自动回到登录页）
+    LaunchedEffect(Unit) {
+        if (!AppState.loggedIn && App.token.isNotEmpty()) {
+            AppState.loggedIn = true
+            Nav.reset(Screen.Home)
+        }
+    }
+
     BackHandler {
         if (Nav.pop()) {
             // 已返回上一页
