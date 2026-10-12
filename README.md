@@ -7,6 +7,14 @@
 
 功能覆盖：仓库/文件/Issue/PR/提交/分支/Release/Actions/通知/搜索/Gists/Webhook 事件等网页版全部操作。
 
+## CI/CD（GitHub Actions）
+
+- [Android 构建 APK](.github/workflows/build-android.yml)：push/PR 到 `gh-android` 时自动 `assembleDebug`，产物以 `app-debug-apk` 工件上传，可在 Actions 页面下载
+- [后端冒烟测试](.github/workflows/backend-check.yml)：push/PR 到 `gh-web-app` 时自动 `npm ci`、语法检查并启动服务验证 `/api/session`
+
+![Android 构建](https://github.com/vauy/gh-web-app/actions/workflows/build-android.yml/badge.svg)
+![后端冒烟测试](https://github.com/vauy/gh-web-app/actions/workflows/backend-check.yml/badge.svg)
+
 ## 快速开始
 
 1. 注册 GitHub App（按 [gh-web-app/app.yml](./gh-web-app/app.yml) 一键创建）并配置 `.env`

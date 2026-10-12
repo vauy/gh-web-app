@@ -1,0 +1,43 @@
+name: 后端冒烟测试
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gh-web-app/**'
+      - '.github/workflows/backend-check.yml'
+  pull_request:
+    paths:
+      - 'gh-web-app/**'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gh-web-app
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: gh-web-app/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 语法检查
+        run: node --check server/index.js && node --check server/auth.js && node --check server/proxy.js && node --check server/webhook.js && node --check server/config.js && node --check server/store.js
+
+      - name: 启动服务并验证
+        run: |
+          node server/index.js > /tmp/server.log 2>&1 &
+          sleep 3
+          curl -fsS http://localhost:3000/api/session || { cat /tmp/server.log; exit 1; }
+          curl -fsS http://localhost:3000/ | grep -q "GitHub Web App" || { cat /tmp/server.log; exit 1; }
+          kill %1 2>/dev/null || true
