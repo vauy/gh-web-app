@@ -33,7 +33,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.githubapp.android.api.ApiClient
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
+import com.githubapp.android.nav.Nav
+import com.githubapp.android.nav.Screen
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
 
@@ -251,9 +255,16 @@ fun FileViewScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
+        val clipboard = LocalClipboardManager.current
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = onBack) { Text("← 返回") }
             Text(filePath, modifier = Modifier.weight(1f), maxLines = 1)
+            TextButton(onClick = {
+                val raw = "https://raw.githubusercontent.com/$owner/$name/$branch/${encPath(filePath)}"
+                clipboard.setText(AnnotatedString(raw))
+                toast(ctx, "已复制 Raw 链接")
+            }) { Text("🔗 Raw") }
+            TextButton(onClick = { Nav.show(Screen.FileHistory(owner, name, filePath)) }) { Text("历史") }
             TextButton(onClick = { showEdit = true }) { Text("编辑") }
             TextButton(onClick = { showDelete = true }) { Text("删除", color = MaterialTheme.colorScheme.error) }
         }

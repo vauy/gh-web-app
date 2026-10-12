@@ -23,6 +23,11 @@ sealed class Screen {
     data class Pr(val owner: String, val name: String, val number: Int) : Screen()
     data class Commit(val owner: String, val name: String, val sha: String) : Screen()
     data class Run(val owner: String, val name: String, val runId: Long) : Screen()
+
+    data class User(val login: String) : Screen()
+    /** kind: followers|following|stargazers|forks|watchers；粉丝/关注用 a=login，仓库列表用 a=owner,b=name */
+    data class PeopleList(val kind: String, val a: String, val b: String) : Screen()
+    data class FileHistory(val owner: String, val name: String, val path: String) : Screen()
 }
 
 /** 全局导航（简单栈式管理） */

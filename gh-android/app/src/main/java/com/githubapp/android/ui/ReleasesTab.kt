@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.githubapp.android.api.ApiClient
+import com.githubapp.android.api.a
 import com.githubapp.android.api.b
 import com.githubapp.android.api.i
 import com.githubapp.android.api.l
@@ -82,6 +84,20 @@ fun ReleasesTab(owner: String, name: String) {
                             if (r.s("body").isNotEmpty()) {
                                 Spacer(Modifier.height(4.dp))
                                 Text(r.s("body"))
+                            }
+                            if (r.a("assets").size() > 0) {
+                                Spacer(Modifier.height(6.dp))
+                                r.a("assets").forEach { a ->
+                                    val asset = a.asJsonObject
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            "📦 ${asset.s("name")}（${fmtSize(asset.i("size"))}）",
+                                            modifier = Modifier.weight(1f),
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                        TextButton(onClick = { openBrowser(ctx, asset.s("browser_download_url")) }) { Text("下载") }
+                                    }
+                                }
                             }
                         }
                     }

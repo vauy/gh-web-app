@@ -22,11 +22,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +83,17 @@ fun AppDialog(
 /** 轻量提示 */
 fun toast(ctx: Context, msg: String) {
     Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+}
+
+/** 用系统浏览器打开链接（下载 Release 资产、查看文件等） */
+fun openBrowser(ctx: Context, url: String) {
+    try {
+        val i = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        ctx.startActivity(i)
+    } catch (e: Exception) {
+        toast(ctx, "无法打开浏览器：$url")
+    }
 }
 
 /** 支持长按复制的文本 */
@@ -153,4 +165,11 @@ fun fmtCount(n: Int): String = when {
     n >= 1000000 -> String.format(Locale.US, "%.1fm", n / 1000000f)
     n >= 1000 -> String.format(Locale.US, "%.1fk", n / 1000f)
     else -> n.toString()
+}
+
+/** 字节大小格式化 */
+fun fmtSize(bytes: Int): String = when {
+    bytes >= 1048576 -> String.format(Locale.US, "%.1f MB", bytes / 1048576f)
+    bytes >= 1024 -> String.format(Locale.US, "%.1f KB", bytes / 1024f)
+    else -> "$bytes B"
 }

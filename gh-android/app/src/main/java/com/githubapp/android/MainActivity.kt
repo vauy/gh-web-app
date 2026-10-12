@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,7 @@ import com.githubapp.android.nav.AppState
 import com.githubapp.android.nav.Nav
 import com.githubapp.android.nav.Screen
 import com.githubapp.android.ui.CommitScreen
+import com.githubapp.android.ui.FileHistoryScreen
 import com.githubapp.android.ui.GistsScreen
 import com.githubapp.android.ui.HomeScreen
 import com.githubapp.android.ui.IssueScreen
@@ -46,11 +48,13 @@ import com.githubapp.android.ui.MoreScreen
 import com.githubapp.android.ui.MyIssuesScreen
 import com.githubapp.android.ui.MyPullsScreen
 import com.githubapp.android.ui.NotificationsScreen
+import com.githubapp.android.ui.PeopleListScreen
 import com.githubapp.android.ui.PrScreen
 import com.githubapp.android.ui.RepoScreen
 import com.githubapp.android.ui.ReposScreen
 import com.githubapp.android.ui.RunScreen
 import com.githubapp.android.ui.SearchScreen
+import com.githubapp.android.ui.UserScreen
 
 private val GhDark = darkColorScheme(
     primary = Color(0xFF4493F8),
@@ -112,14 +116,22 @@ fun MainRoot() {
             Box(Modifier.fillMaxSize().padding(padding)) {
                 // 5 个主页面常驻内存（切换不销毁，状态/搜索结果保留），当前页置顶显示
                 TabHost(activeRoot = if (isRoot) current else lastRoot)
-                // 详情页作为浮层（在 Tab 层之上）
-                Box(Modifier.fillMaxSize().zIndex(2f)) {
+                // 详情页作为浮层（在 Tab 层之上，不透明背景遮住下层）
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .zIndex(2f)
+                        .background(MaterialTheme.colorScheme.background),
+                ) {
                     when (val s = current) {
                         is Screen.Repo -> RepoScreen(s.owner, s.name)
                         is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
                         is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
                         is Screen.Commit -> CommitScreen(s.owner, s.name, s.sha)
                         is Screen.Run -> RunScreen(s.owner, s.name, s.runId)
+                        is Screen.User -> UserScreen(s.login)
+                        is Screen.PeopleList -> PeopleListScreen(s.kind, s.a, s.b)
+                        is Screen.FileHistory -> FileHistoryScreen(s.owner, s.name, s.path)
                         Screen.MyIssues -> MyIssuesScreen()
                         Screen.MyPulls -> MyPullsScreen()
                         Screen.Gists -> GistsScreen()
@@ -149,6 +161,7 @@ private fun TabLayer(tab: Screen, activeRoot: Screen, content: @Composable () ->
     Box(
         Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .alpha(if (selected) 1f else 0f)
             .zIndex(if (selected) 1f else 0f),
     ) {
@@ -173,6 +186,15 @@ fun TopBar() {
         is Screen.Pr -> "Pull Request #${s.number}"
         is Screen.Commit -> "提交详情"
         is Screen.Run -> "运行详情"
+        is Screen.User -> "@${s.login}"
+        is Screen.PeopleList -> when (s.kind) {
+            "followers" -> "粉丝"
+            "following" -> "关注"
+            "stargazers" -> "⭐ 收藏者"
+            "watchers" -> "👀 关注者"
+            else -> "🍴 Forks"
+        }
+        is Screen.FileHistory -> "文件历史"
         Screen.Login -> ""
     }
     CenterAlignedTopAppBar(

@@ -1,5 +1,6 @@
 package com.githubapp.android.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,10 +36,13 @@ import com.githubapp.android.api.i
 import com.githubapp.android.api.o
 import com.githubapp.android.api.s
 import com.githubapp.android.nav.AppState
+import com.githubapp.android.nav.Nav
+import com.githubapp.android.nav.Screen
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
 
 private val TABS = listOf(
+    "概览" to "overview",
     "代码" to "code",
     "Issues" to "issues",
     "PR" to "pulls",
@@ -45,8 +50,10 @@ private val TABS = listOf(
     "分支" to "branches",
     "Releases" to "releases",
     "Actions" to "actions",
+    "管理" to "manage",
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoScreen(owner: String, name: String) {
     val scope = rememberCoroutineScope()
@@ -72,8 +79,16 @@ fun RepoScreen(owner: String, name: String) {
         else -> Column(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        r.o("owner").s("login"),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { Nav.show(Screen.User(r.o("owner").s("login"))) },
+                    )
+                    Text("/", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     CopyText(
-                        "${r.o("owner").s("login")}/${r.s("name")}",
+                        r.s("name"),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -89,9 +104,19 @@ fun RepoScreen(owner: String, name: String) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Row {
-                    Text("⭐ ${fmtCount(r.i("stargazers_count"))}", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "⭐ ${fmtCount(r.i("stargazers_count"))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { Nav.show(Screen.PeopleList("stargazers", owner, name)) },
+                    )
                     Spacer(Modifier.width(14.dp))
-                    Text("🍴 ${fmtCount(r.i("forks_count"))}", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "🍴 ${fmtCount(r.i("forks_count"))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { Nav.show(Screen.PeopleList("forks", owner, name)) },
+                    )
                     Spacer(Modifier.width(14.dp))
                     Text("🐛 ${fmtCount(r.i("open_issues_count"))}", style = MaterialTheme.typography.bodySmall)
                     Spacer(Modifier.width(14.dp))
@@ -141,13 +166,14 @@ fun RepoScreen(owner: String, name: String) {
                     }) { Text("🔗 复制地址") }
                 }
             }
-            TabRow(selectedTabIndex = TABS.indexOfFirst { it.second == tab }.coerceAtLeast(0)) {
+            ScrollableTabRow(selectedTabIndex = TABS.indexOfFirst { it.second == tab }.coerceAtLeast(0), edgePadding = 8.dp) {
                 TABS.forEach { (label, key) ->
                     Tab(selected = tab == key, onClick = { tab = key }, text = { Text(label) })
                 }
             }
             Box(Modifier.fillMaxSize().weight(1f)) {
                 when (tab) {
+                    "overview" -> OverviewTab(owner, name)
                     "code" -> CodeTab(owner, name)
                     "issues" -> IssuesTab(owner, name)
                     "pulls" -> PullsTab(owner, name)
@@ -155,6 +181,7 @@ fun RepoScreen(owner: String, name: String) {
                     "branches" -> BranchesTab(owner, name)
                     "releases" -> ReleasesTab(owner, name)
                     "actions" -> ActionsTab(owner, name)
+                    "manage" -> ManageTab(owner, name)
                 }
             }
         }

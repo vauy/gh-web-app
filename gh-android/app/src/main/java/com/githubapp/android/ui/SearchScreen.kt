@@ -163,6 +163,6 @@ private fun searchNavigate(type: String, it: JsonObject) {
             val f = it.o("repository").s("full_name").split("/")
             if (f.size == 2) Nav.show(Screen.Repo(f[0], f[1]))
         }
-        "users" -> Unit
+        "users" -> Nav.show(Screen.User(it.s("login")))
     }
 }
