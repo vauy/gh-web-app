@@ -1,5 +1,6 @@
 package com.githubapp.android.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -53,6 +55,8 @@ fun LoginScreen(onLoggedIn: () -> Unit) {
     var interval by remember { mutableStateOf(5) }
     var error by remember { mutableStateOf<String?>(null) }
     var status by remember { mutableStateOf("") }
+    var mode by remember { mutableStateOf("device") } // device | token
+    var tokenInput by remember { mutableStateOf("") }
 
     fun startDeviceFlow() {
         val id = clientId.trim()
@@ -132,9 +136,42 @@ fun LoginScreen(onLoggedIn: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
             )
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(20.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = mode == "device", onClick = { mode = "device" }, label = { Text("设备码登录") })
+                FilterChip(selected = mode == "token", onClick = { mode = "token" }, label = { Text("粘贴 Token 登录") })
+            }
+            Spacer(Modifier.height(16.dp))
 
-            when (step) {
+            if (mode == "token") {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "创建 Token：GitHub → Settings → Developer settings → Personal access tokens → 勾选 repo / workflow / notifications / gist 权限后生成，粘贴到下面即可长期登录。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        OutlinedTextField(
+                            tokenInput, { tokenInput = it },
+                            label = { Text("粘贴 Personal Access Token") },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Button(onClick = {
+                            val t = tokenInput.trim()
+                            if (t.isEmpty()) {
+                                error = "Token 不能为空"
+                                return@Button
+                            }
+                            App.saveToken(t)
+                            AppState.loggedIn = true
+                            toast(context, "登录成功")
+                            onLoggedIn()
+                        }, modifier = Modifier.fillMaxWidth()) { Text("登录") }
+                    }
+                }
+            } else when (step) {
                 "id" -> {
                     OutlinedTextField(
                         clientId, { clientId = it },
