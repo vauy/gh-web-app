@@ -118,7 +118,10 @@ fun SearchScreen() {
 
 @Composable
 private fun SearchRow(type: String, it: JsonObject) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        onClick = { searchNavigate(type, it) },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(Modifier.padding(12.dp)) {
             when (type) {
                 "repositories" -> {
@@ -142,4 +145,24 @@ private fun SearchRow(type: String, it: JsonObject) {
         }
     }
     HorizontalDivider()
+}
+
+/** 搜索结果点击跳转 */
+private fun searchNavigate(type: String, it: JsonObject) {
+    when (type) {
+        "repositories" -> Nav.show(Screen.Repo(it.o("owner").s("login"), it.s("name")))
+        "issues" -> {
+            val p = it.s("repository_url").substringAfter("/repos/").split("/")
+            if (p.size == 2) Nav.show(Screen.Issue(p[0], p[1], it.i("number")))
+        }
+        "pullrequests" -> {
+            val p = it.s("repository_url").substringAfter("/repos/").split("/")
+            if (p.size == 2) Nav.show(Screen.Pr(p[0], p[1], it.i("number")))
+        }
+        "code" -> {
+            val f = it.o("repository").s("full_name").split("/")
+            if (f.size == 2) Nav.show(Screen.Repo(f[0], f[1]))
+        }
+        "users" -> Unit
+    }
 }
