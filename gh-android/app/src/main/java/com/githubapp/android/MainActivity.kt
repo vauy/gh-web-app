@@ -22,10 +22,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.zIndex
 import com.githubapp.android.App
 import com.githubapp.android.nav.AppState
 import com.githubapp.android.nav.Nav
@@ -92,29 +99,60 @@ fun MainRoot() {
     if (!AppState.loggedIn) {
         LoginScreen(onLoggedIn = { Nav.reset(Screen.Home) })
     } else {
+        val current = Nav.current
+        val isRoot = current == Screen.Home || current == Screen.Repos || current == Screen.Search ||
+            current == Screen.Notifications || current == Screen.More
+        var lastRoot by remember { mutableStateOf<Screen>(Screen.Home) }
+        SideEffect { if (isRoot) lastRoot = current }
+
         Scaffold(
             topBar = { TopBar() },
             bottomBar = { BottomNav() },
         ) { padding ->
             Box(Modifier.fillMaxSize().padding(padding)) {
-                when (val s = Nav.current) {
-                    Screen.Home -> HomeScreen()
-                    Screen.Repos -> ReposScreen()
-                    Screen.Search -> SearchScreen()
-                    Screen.Notifications -> NotificationsScreen()
-                    Screen.More -> MoreScreen()
-                    Screen.MyIssues -> MyIssuesScreen()
-                    Screen.MyPulls -> MyPullsScreen()
-                    Screen.Gists -> GistsScreen()
-                    is Screen.Repo -> RepoScreen(s.owner, s.name)
-                    is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
-                    is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
-                    is Screen.Commit -> CommitScreen(s.owner, s.name, s.sha)
-                    is Screen.Run -> RunScreen(s.owner, s.name, s.runId)
-                    Screen.Login -> Unit
+                // 5 个主页面常驻内存（切换不销毁，状态/搜索结果保留），当前页置顶显示
+                TabHost(activeRoot = if (isRoot) current else lastRoot)
+                // 详情页作为浮层（在 Tab 层之上）
+                Box(Modifier.fillMaxSize().zIndex(2f)) {
+                    when (val s = current) {
+                        is Screen.Repo -> RepoScreen(s.owner, s.name)
+                        is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
+                        is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
+                        is Screen.Commit -> CommitScreen(s.owner, s.name, s.sha)
+                        is Screen.Run -> RunScreen(s.owner, s.name, s.runId)
+                        Screen.MyIssues -> MyIssuesScreen()
+                        Screen.MyPulls -> MyPullsScreen()
+                        Screen.Gists -> GistsScreen()
+                        else -> Unit
+                    }
                 }
             }
         }
+    }
+}
+
+/** 底部 5 个主页面：全部保持组合状态，仅切换可见性 */
+@Composable
+private fun TabHost(activeRoot: Screen) {
+    Box(Modifier.fillMaxSize()) {
+        TabLayer(Screen.Home, activeRoot) { HomeScreen() }
+        TabLayer(Screen.Repos, activeRoot) { ReposScreen() }
+        TabLayer(Screen.Search, activeRoot) { SearchScreen() }
+        TabLayer(Screen.Notifications, activeRoot) { NotificationsScreen() }
+        TabLayer(Screen.More, activeRoot) { MoreScreen() }
+    }
+}
+
+@Composable
+private fun TabLayer(tab: Screen, activeRoot: Screen, content: @Composable () -> Unit) {
+    val selected = tab == activeRoot
+    Box(
+        Modifier
+            .fillMaxSize()
+            .alpha(if (selected) 1f else 0f)
+            .zIndex(if (selected) 1f else 0f),
+    ) {
+        content()
     }
 }
 
