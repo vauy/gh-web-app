@@ -1,6 +1,5 @@
 package com.githubapp.android.api
 
-import android.webkit.CookieManager
 import com.githubapp.android.App
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -8,25 +7,22 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Cookie
-import okhttp3.CookieJar
-import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-// 统一请求入口：代理到后端 /api/gh/（后端再转发到 GitHub REST API），
-// 与登录 WebView 共享 Cookie，实现账号 / 应用双身份。
+// 统一请求入口：直连 GitHub REST API（https://api.github.com/），
+// 使用 GitHub 设备码（Device Flow）获取的用户令牌认证，不依赖任何后端。
 object ApiClient {
 
     private val json = "application/json; charset=utf-8".toMediaType()
+    private val form = "application/x-www-form-urlencoded".toMediaType()
 
     private val client: OkHttpClient by lazy {
-        CookieManager.getInstance().setAcceptCookie(true)
         OkHttpClient.Builder()
-            .cookieJar(WebViewCookieJar())
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
@@ -34,9 +30,11 @@ object ApiClient {
 
     suspend fun request(method: String, path: String, body: JsonObject? = null, accept: String? = null): JsonElementResult =
         withContext(Dispatchers.IO) {
-            val url = App.baseUrl + "/api/gh/" + path
+            val url = "https://api.github.com/" + path
             val rb = body?.toString()?.toRequestBody(json)
             val b = Request.Builder().url(url)
+            b.header("Authorization", "Bearer ${App.token}")
+            b.header("User-Agent", "GhAndroid")
             if (accept != null) b.header("Accept", accept)
             val req = b.method(method, if (method == "GET" || method == "HEAD") null else rb)
                 .build()
@@ -64,8 +62,10 @@ object ApiClient {
 
     // 文本响应（源码 / 日志等）
     suspend fun getText(path: String, accept: String? = null): String = withContext(Dispatchers.IO) {
-        val url = App.baseUrl + "/api/gh/" + path
+        val url = "https://api.github.com/" + path
         val b = Request.Builder().url(url)
+        b.header("Authorization", "Bearer ${App.token}")
+        b.header("User-Agent", "GhAndroid")
         if (accept != null) b.header("Accept", accept)
         client.newCall(b.build()).execute().use { resp ->
             val text = resp.body?.string() ?: ""
@@ -74,40 +74,54 @@ object ApiClient {
         }
     }
 
-    // 会话状态
-    suspend fun session(): JsonObject = withContext(Dispatchers.IO) {
-        val req = Request.Builder().url(App.baseUrl + "/api/session").build()
+    // ---- GitHub 设备码（Device Flow）----
+
+    // 第一步：申请设备码与用户码
+    suspend fun requestDeviceCode(clientId: String): JsonObject = withContext(Dispatchers.IO) {
+        val body = "client_id=$clientId&scope=${URLEncoder.encode(App.SCOPE, "UTF-8")}".toRequestBody(form)
+        val req = Request.Builder()
+            .url("https://github.com/login/device/code")
+            .post(body)
+            .header("Accept", "application/json")
+            .header("User-Agent", "GhAndroid")
+            .build()
         client.newCall(req).execute().use { resp ->
             val text = resp.body?.string() ?: "{}"
-            if (text.isBlank()) JsonObject() else JsonParser.parseString(text).asJsonObject
+            val j = try { JsonParser.parseString(text).asJsonObject } catch (e: JsonSyntaxException) { JsonObject() }
+            if (!resp.isSuccessful) {
+                val msg = j.s("error_description").ifEmpty { j.s("error").ifEmpty { "HTTP ${resp.code}" } }
+                throw ApiException(resp.code, msg)
+            }
+            j
+        }
+    }
+
+    // 第二步：轮询换取访问令牌（authorization_pending 表示用户尚未授权）
+    suspend fun pollAccessToken(clientId: String, deviceCode: String): JsonObject = withContext(Dispatchers.IO) {
+        val body = ("client_id=$clientId&device_code=${URLEncoder.encode(deviceCode, "UTF-8")}" +
+                "&grant_type=urn:ietf:params:oauth:grant-type:device_code").toRequestBody(form)
+        val req = Request.Builder()
+            .url("https://github.com/login/oauth/access_token")
+            .post(body)
+            .header("Accept", "application/json")
+            .header("User-Agent", "GhAndroid")
+            .build()
+        client.newCall(req).execute().use { resp ->
+            val text = resp.body?.string() ?: "{}"
+            val j = try { JsonParser.parseString(text).asJsonObject } catch (e: JsonSyntaxException) { JsonObject() }
+            if (!resp.isSuccessful) {
+                val msg = j.s("error_description").ifEmpty { j.s("error").ifEmpty { "HTTP ${resp.code}" } }
+                throw ApiException(resp.code, msg)
+            }
+            j
         }
     }
 
     fun logout() {
-        CookieManager.getInstance().removeAllCookies(null)
+        App.clearAuth()
     }
 
     class ApiException(val code: Int, message: String) : Exception(message)
-
-    // OkHttp 与 WebView 共享 Cookie，保证登录会话一致
-    class WebViewCookieJar : CookieJar {
-        override fun loadForRequest(url: HttpUrl): List<Cookie> {
-            val cookies = CookieManager.getInstance().getCookie(url.toString()) ?: return emptyList()
-            return cookies.split(';').mapNotNull { part ->
-                val idx = part.indexOf('=')
-                if (idx <= 0) null
-                else Cookie.Builder().domain(url.host)
-                    .name(part.substring(0, idx).trim())
-                    .value(part.substring(idx + 1).trim())
-                    .path("/").build()
-            }
-        }
-        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-            cookies.forEach { c ->
-                CookieManager.getInstance().setCookie(url.toString(), "${c.name}=${c.value}; Path=/")
-            }
-        }
-    }
 }
 
 // 包装响应文本，按需解析

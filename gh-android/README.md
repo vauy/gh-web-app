@@ -1,12 +1,12 @@
-# GitHub 客户端（Android 原生 App）
+# GitHub 客户端（Android 原生 App · 纯独立版）
 
-Kotlin + Jetpack Compose 编写的 **Android 原生应用**，全中文界面，覆盖 GitHub 网页版核心操作，并保留 **GitHub App 机器人/集成** 能力（OAuth 登录 + Webhook 接收 + 机器人自动回复）。
+Kotlin + Jetpack Compose 编写的 **Android 原生应用**，全中文界面，覆盖 GitHub 网页版核心操作。
 
-依赖同一个 Node 后端（[gh-web-app](../gh-web-app)）：登录、API 代理、Webhook、机器人全部由后端完成，App 是原生前端。
+**不依赖任何后端服务**：直连 `api.github.com`，登录使用 GitHub 官方**设备码（Device Flow）**方式，装好就能用。
 
 ## 功能
 
-- 🔐 GitHub 账号 OAuth 登录（内嵌 WebView，与后端共享会话 Cookie）
+- 🔐 GitHub 设备码登录（无需回调地址/后端；首次在任意浏览器输入用户码授权）
 - 📦 仓库：列表/过滤/新建/收藏/关注
 - 📁 代码：目录浏览、文件渲染查看、编辑、新建、上传、删除
 - 🐛 Issues：列表/创建/编辑/评论/关闭/重开
@@ -16,31 +16,25 @@ Kotlin + Jetpack Compose 编写的 **Android 原生应用**，全中文界面，
 - 🏷️ Releases 发布
 - ⚙️ Actions：工作流/运行记录/Jobs/日志
 - 🔔 通知（全部/单条标记已读）
-- 📝 Gists、🔍 搜索（仓库/用户/Issue/PR/代码）
-- ⚡ Webhook 事件日志、👤 我的 Issues / PR（跨仓库）
+- 📝 Gists、🔍 搜索（仓库/用户/Issue/PR/代码）、👤 我的 Issues / PR
 
-## 快速开始
+> 说明：Webhook 接收与机器人自动回复需要服务器，纯独立版不含此功能。
 
-1. **启动后端**（详见 [gh-web-app/README.md](../gh-web-app/README.md)）：
-   ```bash
-   cd gh-web-app
-   npm install && npm start   # 默认 http://localhost:3000
-   ```
-   并按说明注册 GitHub App、配置 `.env`。
+## 首次使用（一次性设置）
 
-2. **打开本项目**：Android Studio → Open → 选择 `gh-android` 目录 → Gradle 同步（要求 JDK 17+，Android SDK 34）。
+1. 创建应用拿 Client ID（1 分钟）：
+   - GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**
+   - 名称随意，回调地址留空即可（设备码不需要）
+   - 复制页面上显示的 **Client ID**
+2. 打开 App，把 Client ID 填入登录页（只需填一次，会保存）
+3. 点「获取授权代码」→ 在任意设备浏览器打开 `https://github.com/login/device` → 输入 App 显示的 8 位代码 → 授权
+4. 回 App 点「我已授权，开始连接」→ 自动登录
 
-3. **运行**：
-   - 模拟器：直接运行，App 默认后端地址为 `http://10.0.2.2:3000`（模拟器访问宿主机）
-   - 真机：App → 「我的」→ 修改服务地址为电脑局域网 IP 或内网穿透（ngrok）的 HTTPS 地址
-
-4. 首次使用：App 打开后端 OAuth 页面 → 在 GitHub 授权 → 自动进入主界面。
-
-## 构建 APK
+## 构建
 
 ```bash
 gradle :app:assembleDebug   # 产物: app/build/outputs/apk/debug/app-debug.apk
-# 或直接使用 Android Studio 的 Build → Build APK
+# 或用 Android Studio 打开本目录运行 / Build APK
 ```
 
 ## 项目结构
@@ -48,11 +42,11 @@ gradle :app:assembleDebug   # 产物: app/build/outputs/apk/debug/app-debug.apk
 ```
 app/src/main/java/com/githubapp/android/
 ├── MainActivity.kt          # 主界面、底部导航、顶栏、路由分发
-├── App.kt                   # Application：全局服务地址配置
+├── App.kt                   # 全局令牌 / Client ID 持久化
 ├── nav/Nav.kt               # 页面路由与全局登录状态
-├── api/ApiClient.kt         # OkHttp 封装（与 WebView 共享 Cookie）
+├── api/ApiClient.kt         # OkHttp 直连 GitHub API + 设备码登录
 └── ui/                      # 全部中文界面
-    ├── LoginScreen.kt       # WebView OAuth 登录
+    ├── LoginScreen.kt       # 设备码登录
     ├── HomeScreen.kt        # 首页（个人信息 + 收藏）
     ├── ReposScreen.kt       # 我的仓库
     ├── RepoScreen.kt        # 仓库详情（Tab 导航）
@@ -66,13 +60,11 @@ app/src/main/java/com/githubapp/android/
     ├── SearchScreen.kt      # 搜索
     ├── NotificationsScreen.kt # 通知
     ├── GistsScreen.kt       # Gists
-    ├── EventsScreen.kt      # Webhook 事件
     ├── MoreScreen.kt        # 我的（设置）
     └── GlobalLists.kt       # 我的 Issues / PR
 ```
 
 ## 说明
 
-- 所有请求经后端 `/api/gh/*` 代理转发到 GitHub REST API，账号与应用（机器人）双身份共用一套会话
-- 会话 Cookie 通过系统 `CookieManager` 在 WebView 与 OkHttp 之间共享
-- 生产部署请将后端切到 HTTPS（内网穿透或服务器），并在 App 中把服务地址改为对应地址
+- 令牌保存在本机 SharedPreferences，退出登录即清除
+- 所有请求直接走 GitHub REST API，无需任何服务器

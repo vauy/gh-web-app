@@ -17,7 +17,6 @@ sealed class Screen {
     object MyIssues : Screen()
     object MyPulls : Screen()
     object Gists : Screen()
-    object Events : Screen()
 
     data class Repo(val owner: String, val name: String) : Screen()
     data class Issue(val owner: String, val name: String, val number: Int) : Screen()

@@ -29,7 +29,6 @@ import com.githubapp.android.nav.AppState
 import com.githubapp.android.nav.Nav
 import com.githubapp.android.nav.Screen
 import com.githubapp.android.ui.CommitScreen
-import com.githubapp.android.ui.EventsScreen
 import com.githubapp.android.ui.GistsScreen
 import com.githubapp.android.ui.HomeScreen
 import com.githubapp.android.ui.IssueScreen
@@ -96,7 +95,6 @@ fun MainRoot() {
                     Screen.MyIssues -> MyIssuesScreen()
                     Screen.MyPulls -> MyPullsScreen()
                     Screen.Gists -> GistsScreen()
-                    Screen.Events -> EventsScreen()
                     is Screen.Repo -> RepoScreen(s.owner, s.name)
                     is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
                     is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
@@ -121,7 +119,6 @@ fun TopBar() {
         Screen.MyIssues -> "我的 Issues"
         Screen.MyPulls -> "我的 Pull Requests"
         Screen.Gists -> "我的 Gists"
-        Screen.Events -> "Webhook 事件"
         is Screen.Repo -> "${s.owner}/${s.name}"
         is Screen.Issue -> "Issue #${s.number}"
         is Screen.Pr -> "Pull Request #${s.number}"
