@@ -116,26 +116,28 @@ fun MainRoot() {
             Box(Modifier.fillMaxSize().padding(padding)) {
                 // 5 个主页面常驻内存（切换不销毁，状态/搜索结果保留），当前页置顶显示
                 TabHost(activeRoot = if (isRoot) current else lastRoot)
-                // 详情页作为浮层（在 Tab 层之上，不透明背景遮住下层）
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .zIndex(2f)
-                        .background(MaterialTheme.colorScheme.background),
-                ) {
-                    when (val s = current) {
-                        is Screen.Repo -> RepoScreen(s.owner, s.name)
-                        is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
-                        is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
-                        is Screen.Commit -> CommitScreen(s.owner, s.name, s.sha)
-                        is Screen.Run -> RunScreen(s.owner, s.name, s.runId)
-                        is Screen.User -> UserScreen(s.login)
-                        is Screen.PeopleList -> PeopleListScreen(s.kind, s.a, s.b)
-                        is Screen.FileHistory -> FileHistoryScreen(s.owner, s.name, s.path)
-                        Screen.MyIssues -> MyIssuesScreen()
-                        Screen.MyPulls -> MyPullsScreen()
-                        Screen.Gists -> GistsScreen()
-                        else -> Unit
+                // 详情页作为浮层（在 Tab 层之上，不透明背景遮住下层）；仅详情页时挂载，避免遮住根页面
+                if (!isRoot) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .zIndex(2f)
+                            .background(MaterialTheme.colorScheme.background),
+                    ) {
+                        when (val s = current) {
+                            is Screen.Repo -> RepoScreen(s.owner, s.name)
+                            is Screen.Issue -> IssueScreen(s.owner, s.name, s.number)
+                            is Screen.Pr -> PrScreen(s.owner, s.name, s.number)
+                            is Screen.Commit -> CommitScreen(s.owner, s.name, s.sha)
+                            is Screen.Run -> RunScreen(s.owner, s.name, s.runId)
+                            is Screen.User -> UserScreen(s.login)
+                            is Screen.PeopleList -> PeopleListScreen(s.kind, s.a, s.b)
+                            is Screen.FileHistory -> FileHistoryScreen(s.owner, s.name, s.path)
+                            Screen.MyIssues -> MyIssuesScreen()
+                            Screen.MyPulls -> MyPullsScreen()
+                            Screen.Gists -> GistsScreen()
+                            else -> Unit
+                        }
                     }
                 }
             }
